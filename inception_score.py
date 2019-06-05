@@ -14,6 +14,7 @@ import glob
 import scipy.misc
 import math
 import sys
+from tqdm import tqdm
 
 MODEL_DIR = '/tmp/imagenet'
 DATA_URL = 'http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz'
@@ -35,7 +36,7 @@ def get_inception_score(images, splits=10):
   with tf.Session() as sess:
     preds = []
     n_batches = int(math.ceil(float(len(inps)) / float(bs)))
-    for i in range(n_batches):
+    for i in tqdm(range(n_batches)):
         sys.stdout.write(".")
         sys.stdout.flush()
         inp = inps[(i * bs):min((i + 1) * bs, len(inps))]
@@ -99,7 +100,10 @@ if __name__=='__main__':
     def get_images(filename):
         return scipy.misc.imread(filename)
         
-    filenames = glob.glob(os.path.join('./data', '*.*'))
+    # filenames = glob.glob(os.path.join('./data', '*.*'))
+    filenames = glob.glob(os.path.join(sys.argv[1], '*.*'))
     images = [get_images(filename) for filename in filenames]
     print(len(images))
-    print(get_inception_score(images))
+    mean_score, std_score = get_inception_score(images)
+    print("MEAN: "+"{:.3f}".format(mean_score))
+    print("std: "+"{:.3f}".format(std_score))
